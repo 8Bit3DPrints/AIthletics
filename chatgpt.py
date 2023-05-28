@@ -36,4 +36,5 @@ class ChatGPT:
             return "Failed to generate a fitness plan. Request exception occurred."
         except Exception as err:
             logging.error('Error occurred: %s', err)
-            return "Failed to generate a fitness plan. An error occurred."
+
+        return "Failed to generate a fitness plan."

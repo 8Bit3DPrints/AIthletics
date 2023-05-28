@@ -12,6 +12,10 @@ import pytz
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import os
+import logging
+import asyncio
+
 logging.basicConfig(level=logging.INFO)
 
 # Create the Discord bot instance
@@ -41,6 +45,26 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandError):
         await ctx.send("An error occurred while executing the command. Please try again.")
         logging.error(f"Command Error: {ctx.command} - {error}")
+
+    questions = Utils.get_questions()
+
+    for question in questions:
+        await dm_channel.send(embed=Utils.create_embed(question))
+
+        try:
+            msg = await bot.wait_for('message', check=Utils.check_author_and_channel(ctx.author, dm_channel), timeout=60.0)
+            user_session[question] = msg.content
+        except asyncio.TimeoutError:
+            await dm_channel.send(embed=Utils.create_embed("You didn't reply in time. Please try the command again."))
+            return  # Exit the command if timeout occurs
+
+    prompt = Utils.create_prompt(user_session)
+
+    user_data_manager.set_user_data(str(ctx.author.id), user_session)
+
+    response = chatgpt.get_response(prompt)
+
+    await dm_channel.send(embed=Utils.create_embed(f"Your fitness plan:\n{response}"))
 
 @bot.command()
 async def help(ctx):

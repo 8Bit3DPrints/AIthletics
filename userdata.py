@@ -13,6 +13,7 @@ class UserDataManager:
     def __init__(self, data_file):
         self.data_file = data_file
         self.user_data = self.load_data()
+        self.key = self.generate_encryption_key()
         self.cipher = self.create_aes_cipher()
 
     def load_data(self):
